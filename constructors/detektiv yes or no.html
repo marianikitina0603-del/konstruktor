@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конструктор игры: Математический Детектив</title>
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <style>
+        :root {
+            --builder-bg: #1e1e2e;
+            --builder-panel: #2b2b3d;
+            --builder-accent: #6366f1;
+            --builder-text: #f3f4f6;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--builder-bg);
+            color: var(--builder-text);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Боковая панель настроек */
+        .sidebar {
+            width: 420px;
+            background: var(--builder-panel);
+            border-right: 1px solid #3f3f56;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            padding: 15px 20px;
+            background: #181825;
+            border-bottom: 1px solid #3f3f56;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #a5b4fc;
+        }
+
+        .tabs {
+            display: flex;
+            background: #181825;
+            border-bottom: 1px solid #3f3f56;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            color: #6366f1;
+            border-bottom-color: #6366f1;
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .tab-content {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+            display: none;
+        }
+
+        .tab-content.active { display: block; }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #9ca3af;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            background: #181825;
+            border: 1px solid #3f3f56;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
+        .color-pickers {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .color-unit {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #181825;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #3f3f56;
+        }
+
+        .color-unit input[type="color"] {
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            cursor: pointer;
+            background: none;
+        }
+
+        .section-subtitle {
+            font-size: 13px;
+            font-weight: bold;
+            color: #a5b4fc;
+            margin: 15px 0 10px 0;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #3f3f56;
+        }
+
+        /* Задания список */
+        .task-item {
+            background: #181825;
+            border: 1px solid #3f3f56;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .task-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #e0e7ff;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-add { background: #10b981; color: white; width: 100%; padding: 10px; margin-top: 10px; font-weight: bold; border-radius: 6px; border: none; cursor: pointer; }
+
+        /* Экран предпросмотра */
+        .preview-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0f172a;
+            position: relative;
+        }
+
+        .preview-toolbar {
+            height: 50px;
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+
+        .preview-frame-container {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Динамические стили конструктора */
+        #dynamic-stage {
+            width: 100%;
+            max-width: 750px;
+            min-height: 500px;
+            border-radius: 12px;
+            padding: 35px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .export-btn {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .export-btn:hover { background: #4f46e5; }
+
+        /* Стиль выравнивания элементов */
+        .stage-header { text-align: center; }
+        .stage-stats { display: flex; justify-content: space-between; padding: 10px 15px; border-radius: 6px; font-weight: bold; margin: 15px 0; }
+        .stage-card { padding: 20px; border-radius: 8px; margin: 15px 0; }
+        .stage-question { font-size: 24px; text-align: center; margin: 20px 0; }
+        .stage-actions { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+
+        .btn-game { padding: 10px 18px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<!-- Панель управления (Конструктор) -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2>🛠️ Конструктор игры</h2>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('design')">🎨 Дизайн</button>
+        <button class="tab-btn" onclick="switchTab('layout')">📐 Блоки и Выравнивание</button>
+        <button class="tab-btn" onclick="switchTab('tasks')">📝 Задания (<span id="tasks-count">0</span>)</button>
+    </div>
+
+    <!-- Вкладка: Дизайн -->
+    <div id="tab-design" class="tab-content active">
+        <div class="form-group">
+            <label>Фон страницы (URL)</label>
+            <input type="text" class="form-control" id="cfg-bg-img" oninput="updateStyles()" value="https://cdna.artstation.com/p/assets/images/images/082/826/472/large/artem_22-1-1.jpg?1734011015">
+        </div>
+
+        <div class="form-group">
+            <label>Подложка карточки (URL)</label>
+            <input type="text" class="form-control" id="cfg-card-img" oninput="updateStyles()" value="https://i.etsystatic.com/51352815/r/il/472cd7/5982365735/il_1588xN.5982365735_4651.jpg">
+        </div>
+
+        <div class="form-group">
+            <label>Цветовая гамма</label>
+            <div class="color-pickers">
+                <div class="color-unit">
+                    <input type="color" id="cfg-clr-text" onchange="updateStyles()" value="#2b1d0c">
+                    <span>Текст</span>
+                </div>
+                <div class="color-unit">
+                    <input type="color" id="cfg-clr-card-bg" onchange="updateStyles()" value="#ffffff">
+                    <span>Плашка</span>
+                </div>
+                <div class="color-unit">
+                    <input type="color" id="cfg-clr-border" onchange="updateStyles()" value="#5c4033">
+                    <span>Рамка</span>
+                </div>
+                <div class="color-unit">
+                    <input type="color" id="cfg-clr-accent" onchange="updateStyles()" value="#8b0000">
+                    <span>Акцент</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Прозрачность подложки под вопрос</label>
+            <input type="range" min="0.1" max="1" step="0.05" class="form-control" id="cfg-card-opacity" oninput="updateStyles()" value="0.75">
+        </div>
+
+        <div class="form-group">
+            <label>Стиль шрифта вопроса</label>
+            <select class="form-control" id="cfg-font-weight" onchange="updateStyles()">
+                <option value="bold" selected>Жирный (Bold)</option>
+                <option value="normal">Обычный (Normal)</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Вкладка: Расположение и Выравнивание Блоков -->
+    <div id="tab-layout" class="tab-content">
+        <div class="section-subtitle">ПОРЯДОК И РАЗМЕРЫ</div>
+        <div class="form-group">
+            <label>Порядок основных блоков</label>
+            <select class="form-control" id="cfg-layout-order" onchange="updateLayout()">
+                <option value="standard">Заголовок ➔ Статистика ➔ Карточка задания</option>
+                <option value="reversed">Статистика ➔ Заголовок ➔ Карточка задания</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Ширина карточки</label>
+            <select class="form-control" id="cfg-card-width" onchange="updateStyles()">
+                <option value="750px" selected>Стандартная (750px)</option>
+                <option value="900px">Широкая (900px)</option>
+                <option value="600px">Компактная (600px)</option>
+            </select>
+        </div>
+
+        <div class="section-subtitle">ВЫРАВНИВАНИЕ ЭЛЕМЕНТОВ</div>
+
+        <div class="form-group">
+            <label>Главный заголовок</label>
+            <select class="form-control" id="cfg-align-header" onchange="updateStyles()">
+                <option value="center" selected>По центру</option>
+                <option value="left">По левому краю</option>
+                <option value="right">По правому краю</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Название дела (Заголовок вопроса)</label>
+            <select class="form-control" id="cfg-align-casetitle" onchange="updateStyles()">
+                <option value="left" selected>По левому краю</option>
+                <option value="center">По центру</option>
+                <option value="right">По правому краю</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Математическое выражение (Вопрос)</label>
+            <select class="form-control" id="cfg-align-math" onchange="updateStyles()">
+                <option value="center" selected>По центру</option>
+                <option value="left">По левому краю</option>
+                <option value="right">По правому краю</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Блок кнопок действий</label>
+            <select class="form-control" id="cfg-align-actions" onchange="updateStyles()">
+                <option value="center" selected>По центру</option>
+                <option value="flex-start">По левому краю</option>
+                <option value="flex-end">По правому краю</option>
+                <option value="stretch">На всю ширину (Растянуть)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Позиция карточки на экране</label>
+            <select class="form-control" id="cfg-align-stage-vertical" onchange="updateStyles()">
+                <option value="center" selected>По центру экрана</option>
+                <option value="flex-start">По верхнему краю</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Вкладка: Задания -->
+    <div id="tab-tasks" class="tab-content">
+        <div id="tasks-editor-list"></div>
+        <button class="btn-add" onclick="addTask()">➕ Добавить новое дело</button>
+    </div>
+</div>
+
+<!-- Область предпросмотра -->
+<div class="preview-area">
+    <div class="preview-toolbar">
+        <span>👁️ Предпросмотр игры в реальном времени</span>
+        <button class="export-btn" onclick="exportHTML()">💾 Скачать автономный HTML</button>
+    </div>
+
+    <div class="preview-frame-container" id="preview-bg">
+        <div id="dynamic-stage">
+            <div id="blk-header" class="stage-header">
+                <h1 id="out-title" style="margin:0; font-family:'Courier New', monospace; font-size: 24px;">🕵️‍♂️ ДЕТЕКТИВНОЕ АГЕНТСТВО</h1>
+            </div>
+
+            <div id="blk-stats" class="stage-stats" style="background: rgba(255,255,255,0.4); border: 1px solid rgba(0,0,0,0.1);">
+                <span>Дело: 1 / <span id="out-total">0</span></span>
+                <span>Раскрыто: 0</span>
+            </div>
+
+            <div id="blk-card" class="stage-card">
+                <div id="out-case-title" style="font-weight: bold; margin-bottom: 10px;">Дело №1</div>
+                <div id="out-case-math" class="stage-question"></div>
+            </div>
+
+            <div id="blk-actions" class="stage-actions">
+                <button class="btn-game" style="background: #2e7d32; color:white;">Решено верно</button>
+                <button class="btn-game" style="background: #c62828; color:white;">Найден подлог!</button>
+                <button class="btn-game" style="background: #d97706; color:white;">🔍 Шпаргалка</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let taskList = [
+        {
+            title: "Дело о сложении дробей",
+            math: "\\frac{1}{3} + \\frac{1}{2} = \\frac{2}{5}",
+            isCorrect: false,
+            theory: "При сложении обыкновенных дробей приводите их к общему знаменателю!",
+            explain: "Подлог! Общий знаменатель 6, верный ответ 5/6."
+        },
+        {
+            title: "Дело об умножении дробей",
+            math: "\\frac{3}{4} \\cdot \\frac{2}{5} = \\frac{6}{20}",
+            isCorrect: true,
+            theory: "При умножении перемножаются числители и знаменатели.",
+            explain: "Верно!"
+        },
+        {
+            title: "Дело о степени",
+            math: "2^3 \\cdot 2^4 = 2^{12}",
+            isCorrect: false,
+            theory: "При умножении степеней показатели складываются.",
+            explain: "Подлог! Должно быть 2^7."
+        }
+    ];
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        event.target.classList.add('active');
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+    }
+
+    function renderTasksEditor() {
+        const container = document.getElementById('tasks-editor-list');
+        container.innerHTML = '';
+        document.getElementById('tasks-count').innerText = taskList.length;
+        document.getElementById('out-total').innerText = taskList.length;
+
+        taskList.forEach((task, idx) => {
+            const item = document.createElement('div');
+            item.className = 'task-item';
+            item.innerHTML = `
+                <div class="task-item-header">
+                    <span>Дело №${idx + 1}</span>
+                    <button class="btn-sm btn-danger" onclick="removeTask(${idx})">Удалить</button>
+                </div>
+                <div class="form-group">
+                    <label>Название дела</label>
+                    <input type="text" class="form-control" value="${task.title}" oninput="updateTask(${idx}, 'title', this.value)">
+                </div>
+                <div class="form-group">
+                    <label>Формула / Пример (KaTeX LaTeX)</label>
+                    <input type="text" class="form-control" value="${task.math.replace(/\\/g, '\\\\')}" oninput="updateTask(${idx}, 'math', this.value)">
+                </div>
+                <div class="form-group">
+                    <label>Верно ли решено?</label>
+                    <select class="form-control" onchange="updateTask(${idx}, 'isCorrect', this.value === 'true')">
+                        <option value="true" ${task.isCorrect ? 'selected' : ''}>Да (Верно)</option>
+                        <option value="false" ${!task.isCorrect ? 'selected' : ''}>Нет (Подлог)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Теория (Шпаргалка)</label>
+                    <textarea class="form-control" rows="2" oninput="updateTask(${idx}, 'theory', this.value)">${task.theory}</textarea>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+
+        updatePreviewTask();
+    }
+
+    function addTask() {
+        taskList.push({
+            title: "Новое дело",
+            math: "x + 2 = 5",
+            isCorrect: true,
+            theory: "Теоретическая справка...",
+            explain: "Объяснение ошибки или верного решения."
+        });
+        renderTasksEditor();
+    }
+
+    function removeTask(idx) {
+        taskList.splice(idx, 1);
+        renderTasksEditor();
+    }
+
+    function updateTask(idx, field, value) {
+        taskList[idx][field] = value;
+        updatePreviewTask();
+    }
+
+    function updatePreviewTask() {
+        if (taskList.length === 0) {
+            document.getElementById('out-case-title').innerText = "Нет заданий";
+            document.getElementById('out-case-math').innerText = "Добавьте хотя бы одно задание";
+            return;
+        }
+        const t = taskList[0];
+        document.getElementById('out-case-title').innerText = t.title;
+        const mathEl = document.getElementById('out-case-math');
+        mathEl.innerHTML = `$$${t.math}$$`;
+
+        if (window.katex) {
+            try {
+                katex.render(t.math, mathEl, { displayMode: true, throwOnError: false });
+            } catch (e) {}
+        }
+    }
+
+    function updateStyles() {
+        const bgImg = document.getElementById('cfg-bg-img').value;
+        const cardImg = document.getElementById('cfg-card-img').value;
+        const clrText = document.getElementById('cfg-clr-text').value;
+        const clrCardBg = document.getElementById('cfg-clr-card-bg').value;
+        const clrBorder = document.getElementById('cfg-clr-border').value;
+        const clrAccent = document.getElementById('cfg-clr-accent').value;
+        const opacity = document.getElementById('cfg-card-opacity').value;
+        const fontWeight = document.getElementById('cfg-font-weight').value;
+        const cardWidth = document.getElementById('cfg-card-width').value;
+
+        // Настройки выравнивания
+        const alignHeader = document.getElementById('cfg-align-header').value;
+        const alignCaseTitle = document.getElementById('cfg-align-casetitle').value;
+        const alignMath = document.getElementById('cfg-align-math').value;
+        const alignActions = document.getElementById('cfg-align-actions').value;
+        const alignVertical = document.getElementById('cfg-align-stage-vertical').value;
+
+        // Фон страницы
+        const previewBg = document.getElementById('preview-bg');
+        previewBg.style.background = `url('${bgImg}') no-repeat center center`;
+        previewBg.style.backgroundSize = 'cover';
+        previewBg.style.alignItems = alignVertical;
+
+        // Главная карточка
+        const stage = document.getElementById('dynamic-stage');
+        stage.style.background = `url('${cardImg}') no-repeat center center`;
+        stage.style.backgroundSize = 'cover';
+        stage.style.borderColor = clrBorder;
+        stage.style.color = clrText;
+        stage.style.maxWidth = cardWidth;
+
+        // Заголовок
+        document.getElementById('blk-header').style.textAlign = alignHeader;
+
+        // Подложка карточки
+        const card = document.getElementById('blk-card');
+        card.style.background = hexToRgba(clrCardBg, opacity);
+        card.style.border = `1px solid ${clrBorder}`;
+
+        // Выравнивание названия и математики
+        const caseTitle = document.getElementById('out-case-title');
+        caseTitle.style.color = clrAccent;
+        caseTitle.style.textAlign = alignCaseTitle;
+
+        const mathEl = document.getElementById('out-case-math');
+        mathEl.style.fontWeight = fontWeight;
+        mathEl.style.textAlign = alignMath;
+
+        // Кнопки
+        const actionsBlock = document.getElementById('blk-actions');
+        actionsBlock.style.justifyContent = alignActions === 'stretch' ? 'space-between' : alignActions;
+        
+        const actionBtns = actionsBlock.querySelectorAll('.btn-game');
+        actionBtns.forEach(btn => {
+            btn.style.flex = alignActions === 'stretch' ? '1' : 'none';
+        });
+    }
+
+    function updateLayout() {
+        const order = document.getElementById('cfg-layout-order').value;
+        const stage = document.getElementById('dynamic-stage');
+        const h = document.getElementById('blk-header');
+        const s = document.getElementById('blk-stats');
+        const c = document.getElementById('blk-card');
+        const a = document.getElementById('blk-actions');
+
+        if (order === 'reversed') {
+            stage.appendChild(s);
+            stage.appendChild(h);
+            stage.appendChild(c);
+            stage.appendChild(a);
+        } else {
+            stage.appendChild(h);
+            stage.appendChild(s);
+            stage.appendChild(c);
+            stage.appendChild(a);
+        }
+    }
+
+    function hexToRgba(hex, opacity) {
+        let c;
+        if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
+            c= hex.substring(1).split('');
+            if(c.length== 3){
+                c= [c[0], c[0], c[1], c[1], c[2], c[2]];
+            }
+            c= '0x'+c.join('');
+            return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+','+opacity+')';
+        }
+        return `rgba(255,255,255,${opacity})`;
+    }
+
+    function exportHTML() {
+        const bgImg = document.getElementById('cfg-bg-img').value;
+        const cardImg = document.getElementById('cfg-card-img').value;
+        const clrText = document.getElementById('cfg-clr-text').value;
+        const clrCardBg = document.getElementById('cfg-clr-card-bg').value;
+        const clrBorder = document.getElementById('cfg-clr-border').value;
+        const clrAccent = document.getElementById('cfg-clr-accent').value;
+        const opacity = document.getElementById('cfg-card-opacity').value;
+        const fontWeight = document.getElementById('cfg-font-weight').value;
+        const cardWidth = document.getElementById('cfg-card-width').value;
+
+        const alignHeader = document.getElementById('cfg-align-header').value;
+        const alignCaseTitle = document.getElementById('cfg-align-casetitle').value;
+        const alignMath = document.getElementById('cfg-align-math').value;
+        const alignActions = document.getElementById('cfg-align-actions').value;
+        const alignVertical = document.getElementById('cfg-align-stage-vertical').value;
+
+        const htmlContent = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Математический Детектив</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"><\/script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"><\/script>
+    <style>
+        body {
+            margin: 0; padding: 20px; min-height: 100vh;
+            background: url('${bgImg}') no-repeat center center fixed;
+            background-size: cover;
+            display: flex; justify-content: center; align-items: ${alignVertical};
+            font-family: 'Courier New', monospace;
+            color: ${clrText};
+        }
+        .container {
+            width: 100%; max-width: ${cardWidth};
+            background: url('${cardImg}') no-repeat center center;
+            background-size: cover; border-radius: 12px;
+            padding: 35px; border: 2px solid ${clrBorder};
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+        }
+        .card-body {
+            background: ${hexToRgba(clrCardBg, opacity)};
+            padding: 25px; border-radius: 8px; border: 1px solid ${clrBorder};
+            margin: 20px 0;
+        }
+        .case-title { font-size: 18px; color: ${clrAccent}; font-weight: bold; margin-bottom: 10px; text-align: ${alignCaseTitle}; }
+        .case-content { font-size: 24px; font-weight: ${fontWeight}; text-align: ${alignMath}; margin: 20px 0; }
+        .btn-group { display: flex; gap: 10px; justify-content: ${alignActions === 'stretch' ? 'space-between' : alignActions}; }
+        .btn { padding: 10px 20px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: white; ${alignActions === 'stretch' ? 'flex: 1;' : ''} }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 style="text-align:${alignHeader};">🕵️‍♂️ МАТЕМАТИЧЕСКИЙ ДЕТЕКТИВ</h1>
+    <div class="card-body">
+        <div id="title" class="case-title"></div>
+        <div id="math" class="case-content"></div>
+    </div>
+    <div class="btn-group">
+        <button class="btn" style="background:#2e7d32" onclick="check(true)">Решено верно</button>
+        <button class="btn" style="background:#c62828" onclick="check(false)">Найден подлог!</button>
+    </div>
+</div>
+<script>
+    const cases = ${JSON.stringify(taskList, null, 2)};
+    let idx = 0;
+    function load() {
+        if(idx >= cases.length) { alert('Все дела раскрыты!'); return; }
+        document.getElementById('title').innerText = cases[idx].title;
+        document.getElementById('math').innerHTML = '$$' + cases[idx].math + '$$';
+        if(window.renderMathInElement) renderMathInElement(document.body);
+    }
+    function check(ans) {
+        if(ans === cases[idx].isCorrect) alert('Правильно!'); else alert('Ошибка!');
+        idx++; load();
+    }
+    window.onload = load;
+<\/script>
+</body>
+</html>`;
+
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'detective_game_custom.html';
+        a.click();
+    }
+
+    window.onload = function() {
+        renderTasksEditor();
+        updateStyles();
+        updateLayout();
+    };
+</script>
+</body>
+</html>
