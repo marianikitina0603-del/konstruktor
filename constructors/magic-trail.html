@@ -37,5 +37,18 @@ function generatedCode(){const c=config(),json=JSON.stringify(c,null,2);return `
 function refresh(){labels();ui.code.value=generatedCode()}function spawn(x,y){const c=config(),p=document.createElement('span');p.className='particle';p.textContent=c.symbols[Math.floor(Math.random()*c.symbols.length)];p.style.left=x+(Math.random()-.5)*c.spread+'px';p.style.top=y+(Math.random()-.5)*c.spread+'px';p.style.fontSize=c.baseSize+Math.random()*c.sizeSpread+'px';p.style.color=Math.random()>.3?c.mainColor:c.brightColor;p.style.textShadow=c.glow?`0 0 4px ${c.brightColor},0 0 9px ${c.mainColor},0 0 18px ${c.softColor}`:'none';p.style.setProperty('--dx',c.drift?(Math.random()-.5)*28+'px':'0px');p.style.setProperty('--dy',c.drift?12+Math.random()*25+'px':'4px');p.style.setProperty('--rot',Math.random()*180-90+'deg');p.style.setProperty('--life',c.lifetime+'ms');layer.appendChild(p);setTimeout(()=>p.remove(),c.lifetime+60)}
 preview.addEventListener('pointermove',e=>{const c=config(),now=performance.now();if(now-last<c.delay)return;last=now;const r=preview.getBoundingClientRect();spawn(e.clientX-r.left,e.clientY-r.top)});ui.color.addEventListener('input',()=>{ui.colorCode.value=ui.color.value.toUpperCase();refresh()});ui.colorCode.addEventListener('input',()=>{const h=normalizeHex(ui.colorCode.value);if(h){ui.color.value=h;refresh()}});document.querySelectorAll('input,textarea').forEach(el=>{if(el!==ui.color&&el!==ui.colorCode)el.addEventListener('input',refresh)});function msg(t){clearTimeout(statusTimer);ui.status.textContent=t;statusTimer=setTimeout(()=>ui.status.textContent='',2200)}$('copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(ui.code.value);msg('Код скопирован')}catch{ui.code.select();document.execCommand('copy');msg('Код скопирован')}});$('download').addEventListener('click',()=>{const blob=new Blob([ui.code.value],{type:'text/html;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='shleif-dlya-genially.html';a.click();URL.revokeObjectURL(a.href);msg('Файл скачан')});refresh()})();
 </script>
+
+<!-- VK author link: shared across constructors -->
+<style>
+.vk-author-link{position:fixed;right:18px;bottom:18px;z-index:2147483000;display:inline-flex;align-items:center;gap:9px;padding:7px 12px 7px 7px;border:1px solid rgba(255,255,255,.7);border-radius:999px;background:rgba(255,255,255,.96);box-shadow:0 5px 20px rgba(20,30,35,.18);color:#263b50;text-decoration:none;font:600 13px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif;transition:transform .2s,box-shadow .2s}
+.vk-author-link:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(20,30,35,.25)}
+.vk-author-link:focus-visible{outline:3px solid #67a6ff;outline-offset:3px}
+.vk-author-icon{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#0077ff;color:#fff;font-weight:800;font-size:14px;letter-spacing:-1px}
+@media(max-width:600px){.vk-author-link{right:10px;bottom:10px;padding:5px}.vk-author-text{display:none}.vk-author-icon{width:34px;height:34px}}
+@media print{.vk-author-link{display:none!important}}
+</style>
+<a class="vk-author-link" href="https://vk.ru/maria__nnn" target="_blank" rel="noopener noreferrer" aria-label="ВКонтакте автора — открыть в новой вкладке" title="Мой ВКонтакте">
+  <span class="vk-author-icon" aria-hidden="true">vk</span><span class="vk-author-text">Мой ВК</span>
+</a>
 </body>
 </html>
