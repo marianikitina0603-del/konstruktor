@@ -84,5 +84,18 @@
     function resetAudio(){audio.pause();audio.removeAttribute('src');audio.load();if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl='';source='';duration=0;start=0;end=0;$('editor').classList.add('inactive');$('settings').classList.add('inactive');$('copy').disabled=true;$('download').disabled=true;$('fileChip').classList.add('hidden');$('warning').classList.add('hidden');updateCode()}
     $('remove').onclick=()=>{resetAudio();$('fileInput').value='';$('urlInput').value='';showError()};
   </script>
+
+<!-- VK author link: shared across constructors -->
+<style>
+.vk-author-link{position:fixed;right:18px;bottom:18px;z-index:2147483000;display:inline-flex;align-items:center;gap:9px;padding:7px 12px 7px 7px;border:1px solid rgba(255,255,255,.7);border-radius:999px;background:rgba(255,255,255,.96);box-shadow:0 5px 20px rgba(20,30,35,.18);color:#263b50;text-decoration:none;font:600 13px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif;transition:transform .2s,box-shadow .2s}
+.vk-author-link:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(20,30,35,.25)}
+.vk-author-link:focus-visible{outline:3px solid #67a6ff;outline-offset:3px}
+.vk-author-icon{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#0077ff;color:#fff;font-weight:800;font-size:14px;letter-spacing:-1px}
+@media(max-width:600px){.vk-author-link{right:10px;bottom:10px;padding:5px}.vk-author-text{display:none}.vk-author-icon{width:34px;height:34px}}
+@media print{.vk-author-link{display:none!important}}
+</style>
+<a class="vk-author-link" href="https://vk.ru/maria__nnn" target="_blank" rel="noopener noreferrer" aria-label="ВКонтакте автора — открыть в новой вкладке" title="Мой ВКонтакте">
+  <span class="vk-author-icon" aria-hidden="true">vk</span><span class="vk-author-text">Мой ВК</span>
+</a>
 </body>
 </html>
