@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Конструктор видео для Genially</title>
+<style>
+:root{--bg:#f6f4ed;--panel:#fffdf8;--ink:#313c34;--muted:#758178;--sage:#6d8979;--line:#dfe5dd;--gold:#c8a66d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:15px/1.5 system-ui,Arial,sans-serif;color:var(--ink)}
+main{max-width:1240px;margin:auto;padding:32px 20px 60px}header{margin-bottom:25px}a{color:var(--sage)}
+h1{font-size:clamp(26px,4vw,39px);line-height:1.1;margin:8px 0 10px}h2{font-size:19px;margin:0 0 15px}p{color:var(--muted);margin:0}
+.grid{display:grid;grid-template-columns:minmax(320px,440px) minmax(0,1fr);gap:20px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 8px 35px #3141360b}
+label.field{display:block;margin:16px 0 7px;font-size:13px;font-weight:750}
+input[type=url],input[type=number],select,textarea{width:100%;font:inherit;color:var(--ink);background:white;border:1px solid #ccd5cc;border-radius:10px;padding:11px 12px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--sage);box-shadow:0 0 0 3px #6d897923}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.checks{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.checks label{display:flex;gap:8px;align-items:center;font-size:13px}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+input[type=checkbox]{accent-color:var(--sage);width:17px;height:17px}
+button{font:inherit;font-weight:750;padding:11px 16px;background:#e9efe9;border:1px solid #c7d4c9;color:#375643;border-radius:11px;cursor:pointer}
+button.primary{background:var(--sage);color:white;border-color:var(--sage)}button:hover{filter:brightness(.96)}
+.hint{font-size:12px;color:var(--muted);margin:7px 0 0}
+.status{font-size:13px;margin-top:10px;color:#725936;min-height:19px;overflow-wrap:anywhere}
+.preview{aspect-ratio:16/9;background:#000;position:relative;overflow:hidden;border-radius:12px}
+.preview video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.preview .shade{position:absolute;inset:0;background:black;opacity:0;pointer-events:none}
+.preview .empty{position:absolute;inset:0;display:grid;place-items:center;color:#e3e7e3;text-align:center;padding:24px;background:linear-gradient(135deg,#263b34,#0c1311)}
+textarea{min-height:210px;resize:vertical;font:12px/1.6 ui-monospace,Consolas,monospace;margin-top:12px}
+.section{margin-top:20px}.section h2{margin-bottom:8px}
+code{background:#ecf0e9;border-radius:4px;padding:2px 4px}
+@media(max-width:850px){.grid{grid-template-columns:1fr}.panel{padding:17px}}
+</style>
+</head>
+<body><main>
+<header><a href="../index.html">← Все конструкторы</a><h1>Видео для Genially</h1>
+<p>Прямая ссылка на MP4 → настройки воспроизведения → готовый HTML-код. Для GitHub достаточно вставить адрес файла из репозитория.</p></header>
+<div class="grid">
+<section class="panel">
+<h2>1. Источник видео</h2>
+<label class="field" for="link">Ссылка на MP4 (GitHub или прямой HTTPS-адрес)</label>
+<input id="link" type="url" spellcheck="false" placeholder="https://github.com/.../blob/main/video.mp4">
+<p class="hint">GitHub-ссылка /blob/ автоматически преобразуется в адрес raw.githubusercontent.com. Репозиторий должен быть публичным.</p>
+<div class="row" style="margin-top:10px"><button id="example">Подставить видео из квеста</button></div>
+<div id="urlStatus" class="status" role="status"></div>
+<h2 style="margin-top:22px">2. Настройки</h2>
+<div class="checks">
+<label><input id="autoplay" type="checkbox" checked>Автозапуск</label>
+<label><input id="muted" type="checkbox" checked>Без звука</label>
+<label><input id="loop" type="checkbox">Повторять видео</label>
+<label><input id="controls" type="checkbox">Панель управления</label>
+<label><input id="fade" type="checkbox" checked>Плавное затемнение</label>
+<label><input id="startfade" type="checkbox" checked>До окончания видео</label>
+</div>
+<div class="two">
+<div><label class="field" for="seconds">Затемнение, секунд</label><input id="seconds" type="number" min="0.2" max="30" step="0.1" value="2"></div>
+<div><label class="field" for="fit">Масштаб изображения</label><select id="fit"><option value="cover">Заполнить область</option><option value="contain">Показать целиком</option></select></div>
+</div>
+<div class="two">
+<div><label class="field" for="ratio">Соотношение сторон</label><select id="ratio"><option value="16/9">16:9</option><option value="4/3">4:3</option><option value="1/1">1:1</option><option value="9/16">9:16</option></select></div>
+<div><label class="field" for="final">После окончания</label><select id="final"><option value="black">Чёрный экран</option><option value="frame">Последний кадр</option></select></div>
+</div>
+<p class="hint" style="margin-top:12px">Если включено повторение, затемнение в конце отключается автоматически. Для автозапуска большинство браузеров требует выключенный звук.</p>
+</section>
+<section class="panel">
+<h2>3. Предпросмотр</h2>
+<div id="preview" class="preview"><video id="player" playsinline preload="metadata"></video><div id="shade" class="shade"></div><div id="empty" class="empty">Вставьте ссылку на видео<br>или выберите пример</div></div>
+<div class="row" style="margin-top:13px"><button id="play" class="primary">▶ Проверить</button><button id="reset">↺ Сначала</button><span id="time" class="hint">0:00 / 0:00</span></div>
+<div id="videoStatus" class="status" role="status"></div>
+<div class="section"><h2>4. Код для вставки</h2><p class="hint">Скопируйте целиком и вставьте через «Вставить → Другие → Код» в Genially. Размер видеоблока задаётся в редакторе.</p>
+<textarea id="output" readonly spellcheck="false" aria-label="HTML-код для Genially"></textarea>
+<div class="row" style="margin-top:11px"><button id="copy" class="primary">⧉ Скопировать HTML</button><button id="download">↓ Скачать HTML</button></div>
+<div id="copyStatus" class="status" role="status"></div>
+</div>
+</section>
+</div>
+<section class="section panel"><h2>Важно</h2>
+<p>HTML5-видео без панели управления можно встроить по прямому общедоступному MP4. Некоторые варианты вставки Genially ограничивают запуск JavaScript и автозапуск; проверьте готовый слайд в режиме публикации. При выборе «Затемнение до окончания» эффект начинается за заданное время до конца ролика. На очень коротких видео затемнение стартует сразу. Ролик не переключает слайды самостоятельно.</p>
+</section>
+</main>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const inputs=['link','autoplay','muted','loop','controls','fade','startfade','seconds','fit','ratio','final'];
+let currentUrl='',fading=false,raf=0;
+function convert(url){
+ url=(url||'').trim();if(!url)return '';
+ try{
+  const u=new URL(url);
+  if(u.protocol!=='https:'&&u.protocol!=='http:')return '';
+  if(u.hostname==='github.com'){
+   const parts=u.pathname.split('/').filter(Boolean);
+   if(parts.length>=5&&parts[2]==='blob'){
+     const path=parts.slice(4).map(s=>encodeURIComponent(decodeURIComponent(s))).join('/');
+     return 'https://raw.githubusercontent.com/'+encodeURIComponent(parts[0])+'/'+encodeURIComponent(parts[1])+'/'+encodeURIComponent(parts[3])+'/'+path;
+   }
+   return '';
+  }
+  if(u.hostname==='raw.githubusercontent.com'||u.hostname==='githubusercontent.com'||u.hostname!=='github.com'){
+    if(!u.pathname.toLowerCase().endsWith('.mp4'))return '';
+    return u.href;
+  }
+ }catch(e){return '';}
+ return '';
+}
+function opts(){return {url:convert($('link').value),autoplay:$('autoplay').checked,muted:$('muted').checked,loop:$('loop').checked,controls:$('controls').checked,fade:$('fade').checked&&!$('loop').checked,startfade:$('startfade').checked,seconds:Math.max(.2,Math.min(30,Number($('seconds').value)||2)),fit:$('fit').value,ratio:$('ratio').value,final:$('final').value};}
+function escaped(v){return String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+function makeCode(o){
+ if(!o.url)return '<!-- Вставьте корректную ссылку на MP4, чтобы получить код -->';
+ const uid='geniallyVideo_'+Math.random().toString(36).slice(2,10);
+ const attr=[o.autoplay?'autoplay':'',o.muted?'muted':'',o.loop?'loop':'',o.controls?'controls':'','playsinline','preload="auto"','disablepictureinpicture'].filter(Boolean).join(' ');
+ const endFade=o.fade;
+ let code='<div id="'+uid+'" style="position:relative;width:100%;height:100%;min-height:100px;overflow:hidden;background:#000;">\n';
+ code+='  <video '+attr+' style="position:absolute;inset:0;width:100%;height:100%;object-fit:'+o.fit+';display:block;'+(o.controls?'':'pointer-events:none;')+'">\n';
+ code+='    <source src="'+escaped(o.url)+'" type="video/mp4">\n  </video>\n';
+ if(endFade)code+='  <div class="video-dark" style="position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity '+o.seconds+'s linear;"></div>\n';
+ code+='</div>';
+ if(endFade||(!o.loop&&o.final==='black')){
+ code+='\n<script>\n(function(){\n';
+ code+=' const root=document.getElementById("'+uid+'");\n if(!root)return;\n const v=root.querySelector("video");\n';
+ if(endFade){
+ code+=' const dark=root.querySelector(".video-dark");\n let done=false;\n';
+ if(o.startfade){
+ code+=' function tick(){\n  if(!done&&Number.isFinite(v.duration)&&v.duration>0&&v.currentTime>=Math.max(0,v.duration-'+o.seconds+')){\n   done=true;dark.style.opacity="1";\n  }\n }\n v.addEventListener("timeupdate",tick);\n v.addEventListener("seeked",tick);\n';
+ }
+ code+=' v.addEventListener("ended",function(){dark.style.opacity="1";});\n';
+ }else{
+ code+=' v.addEventListener("ended",function(){v.style.opacity="0";});\n';
+ }
+ code+='})();\n<'+'/script>';
+ }
+ return code;
+}
+function fmt(s){if(!Number.isFinite(s))return '0:00';return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');}
+function sync(resetSource){
+ const o=opts(),v=$('player'),shade=$('shade');
+ $('urlStatus').textContent=$('link').value&&!o.url?'Нужна ссылка на общедоступный файл .mp4.':'';
+ $('seconds').disabled=!$('fade').checked;
+ $('startfade').disabled=!$('fade').checked||$('loop').checked;
+ $('final').disabled=$('loop').checked;
+ $('preview').style.aspectRatio=o.ratio;
+ v.style.objectFit=o.fit;v.muted=o.muted;v.loop=o.loop;v.controls=o.controls;
+ shade.style.transition='opacity '+o.seconds+'s linear';
+ if(resetSource&&currentUrl!==o.url){
+  currentUrl=o.url;v.pause();v.removeAttribute('src');
+  if(o.url)v.src=o.url;v.load();$('empty').hidden=!!o.url;
+  shade.style.opacity=0;fading=false;$('videoStatus').textContent='';
+ }
+ $('output').value=makeCode(o);
+}
+function tick(){
+ const o=opts(),v=$('player');
+ $('time').textContent=fmt(v.currentTime)+' / '+fmt(v.duration);
+ if(o.fade&&o.startfade&&v.duration>0&&!fading&&v.currentTime>=Math.max(0,v.duration-o.seconds)){
+  fading=true;$('shade').style.opacity='1';
+ }
+ if(!v.paused&&!v.ended)raf=requestAnimationFrame(tick);
+}
+function play(){
+ const o=opts(),v=$('player');if(!o.url){$('videoStatus').textContent='Сначала укажите ссылку на MP4.';return;}
+ v.pause();cancelAnimationFrame(raf);fading=false;
+ $('shade').style.transition='none';$('shade').style.opacity='0';void $('shade').offsetHeight;
+ $('shade').style.transition='opacity '+o.seconds+'s linear';
+ v.currentTime=0;v.play().then(()=>{raf=requestAnimationFrame(tick);$('videoStatus').textContent='';}).catch(()=>{$('videoStatus').textContent='Не удалось запустить: проверьте доступ к файлу и формат видео.';});
+}
+$('play').addEventListener('click',play);
+$('reset').addEventListener('click',()=>{const v=$('player');v.pause();cancelAnimationFrame(raf);v.currentTime=0;fading=false;$('shade').style.opacity='0';$('time').textContent='0:00 / '+fmt(v.duration);});
+$('player').addEventListener('ended',()=>{const o=opts();if(o.fade){$('shade').style.opacity='1';}else if(o.final==='black'&&!o.loop){$('player').style.opacity='0';}});
+$('player').addEventListener('play',()=>{$('player').style.opacity='1';});
+$('player').addEventListener('error',()=>{$('videoStatus').textContent='Видео не загружается. Проверьте, что репозиторий публичный и ссылка ведёт к MP4.';});
+inputs.forEach(id=>$(id).addEventListener('input',()=>sync(id==='link')));
+$('example').addEventListener('click',()=>{
+ $('link').value='https://github.com/marianikitina0603-del/probable-umbrella/blob/main/14d731db364cb11c76d8efd1888b93c6_c1d6dfe4-b50a-43bf-9a1a-7468c9a3eb78.mp4';sync(true);
+});
+$('copy').addEventListener('click',async()=>{
+ const content=$('output').value;
+ try{await navigator.clipboard.writeText(content);$('copyStatus').textContent='Код скопирован.';}
+ catch(e){$('output').focus();$('output').select();$('copyStatus').textContent=document.execCommand('copy')?'Код скопирован.':'Выделите код и скопируйте вручную (Ctrl+C).';}
+});
+$('download').addEventListener('click',()=>{
+ const blob=new Blob(['<!doctype html><html lang="ru"><head><meta charset="utf-8"><style>html,body{margin:0;width:100%;height:100%;background:#000}</style></head><body>'+$('output').value+'</body></html>'],{type:'text/html;charset=utf-8'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='video-genially.html';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+});
+sync(false);$('example').click();
+})();
+</script>
+</body></html>
